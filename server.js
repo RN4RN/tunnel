@@ -1,32 +1,22 @@
 const express = require('express');
-const fs = require('fs');
 const app = express();
-
 app.use(express.json());
 
-app.get('/tunel', (req, res) => {
-  try {
-    const data = fs.readFileSync('tunnel.json', 'utf8');
-    res.type('json').send(data);
-  } catch (e) {
-    res.status(500).send({ error: 'No se pudo leer el túnel' });
+let datos = { ip: null, puerto: null };
+
+app.post('/registro', (req, res) => {
+  const { ip, puerto } = req.body;
+  if (ip && puerto) {
+    datos = { ip, puerto };
+    res.send({ status: "OK", mensaje: "Registrado correctamente" });
+  } else {
+    res.status(400).send({ error: "Faltan datos" });
   }
 });
 
-app.post('/tunel', (req, res) => {
-  const { host, port, key } = req.body;
-
-  if (key !== 'mi_clave_supersecreta') {
-    return res.status(403).send({ error: 'Clave incorrecta' });
-  }
-
-  if (!host || !port) {
-    return res.status(400).send({ error: 'Falta host o port' });
-  }
-
-  fs.writeFileSync('tunnel.json', JSON.stringify({ host, port }, null, 2));
-  res.send({ ok: true });
+app.get('/ip', (req, res) => {
+  res.send(datos);
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Servidor en el puerto ${port}`));
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Servidor en el puerto ${PORT}`));
